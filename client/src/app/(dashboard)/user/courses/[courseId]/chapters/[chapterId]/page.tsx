@@ -4,7 +4,6 @@ import { useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import ReactPlayer from "react-player";
 import Loading from "@/components/Loading";
 import { useCourseProgressData } from "@/hooks/useCourseProgressData";
 
@@ -21,27 +20,28 @@ const Course = () => {
     hasMarkedComplete,
     setHasMarkedComplete,
   } = useCourseProgressData();
-
   console.log("currentChapter.video:", currentChapter);
 
-  // Use `typeof ReactPlayer` for the ref type
-  const playerRef = useRef<typeof ReactPlayer>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  const handleProgress = ({ played }: { played: number }) => {
-    if (
-      played >= 0.8 &&
-      !hasMarkedComplete &&
-      currentChapter &&
-      currentSection &&
-      userProgress?.sections &&
-      !isChapterCompleted()
-    ) {
-      setHasMarkedComplete(true);
-      updateChapterProgress(
-        currentSection.sectionId,
-        currentChapter.chapterId,
-        true
-      );
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      const played = videoRef.current.currentTime / videoRef.current.duration;
+      if (
+        played >= 0.8 &&
+        !hasMarkedComplete &&
+        currentChapter &&
+        currentSection &&
+        userProgress?.sections &&
+        !isChapterCompleted()
+      ) {
+        setHasMarkedComplete(true);
+        updateChapterProgress(
+          currentSection.sectionId,
+          currentChapter.chapterId,
+          true
+        );
+      }
     }
   };
 
@@ -78,20 +78,15 @@ const Course = () => {
         <Card className="course__video">
           <CardContent className="course__video-container">
             {currentChapter?.video ? (
-              <ReactPlayer
-                ref={playerRef}
-                url={currentChapter.video as string}
+              <video
+                ref={videoRef}
+                src={currentChapter.video as string}
                 controls
                 width="100%"
                 height="100%"
-                onProgress={handleProgress}
-                config={{
-                  file: {
-                    attributes: {
-                      controlsList: "nodownload",
-                    },
-                  },
-                }}
+                onTimeUpdate={handleTimeUpdate}
+                controlsList="nodownload"
+                style={{ maxHeight: "400px" }}
               />
             ) : (
               <div className="course__no-video">
@@ -121,7 +116,7 @@ const Course = () => {
                   <CardTitle>Notes Content</CardTitle>
                 </CardHeader>
                 <CardContent className="course__tab-body">
-                  {currentChapter?.content ?? "No notes available."}
+                  {currentChapter?.content}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -133,7 +128,6 @@ const Course = () => {
                 </CardHeader>
                 <CardContent className="course__tab-body">
                   {/* Add resources content here */}
-                  No resources available.
                 </CardContent>
               </Card>
             </TabsContent>
@@ -145,7 +139,6 @@ const Course = () => {
                 </CardHeader>
                 <CardContent className="course__tab-body">
                   {/* Add quiz content here */}
-                  No quiz available.
                 </CardContent>
               </Card>
             </TabsContent>

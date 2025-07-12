@@ -9,9 +9,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Image from "next/image";
 import { formatPrice } from "@/lib/utils";
 
-const CourseCard = ({ course, onGoToCourse }: CourseCardProps) => {
+const CourseCardSearch = ({ course, isSelected, onClick }: SearchCourseCardProps) => {
   return (
-    <Card className="course-card group" onClick={() => onGoToCourse(course)}>
+    <Card className={`course-card group ${isSelected ? 'course-card--selected' : ''}`} onClick={onClick}>
       <CardHeader className="course-card__header">
         <Image
           src={course.image || "/placeholder.png"}
@@ -51,4 +51,4 @@ const CourseCard = ({ course, onGoToCourse }: CourseCardProps) => {
   );
 };
 
-export default CourseCard;
+export default CourseCardSearch;
